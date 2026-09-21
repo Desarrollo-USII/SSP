@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SSP.Data;
+using Microsoft.AspNetCore.Identity; // Necesario para IPasswordHasher
 using SSP.Models;
-using SSP.ViewModels;
-using SSP.Functions;
+using System;
 
 [Authorize(Policy = "AdminPolicy")]
 public class EncriptarController : Controller
 {
-    private readonly ClsEncrypt _encrypt;
+    private readonly IPasswordHasher<MoUsuario> _passwordHasher;
 
-    public EncriptarController(IConfiguration config)
+    // Inyectamos el IPasswordHasher en lugar de ClsEncrypt
+    public EncriptarController(IPasswordHasher<MoUsuario> passwordHasher)
     {
-        _encrypt = new ClsEncrypt(config);
+        _passwordHasher = passwordHasher;
     }
 
     [HttpGet]
@@ -21,24 +21,26 @@ public class EncriptarController : Controller
         return View();
     }
 
-    // Encripta un texto
+    // Genera el Hash de una contraseña
     [HttpPost]
     public IActionResult Encriptar(string texto)
     {
         if (string.IsNullOrWhiteSpace(texto))
         {
-            return Json(new { success = false, mensaje = "Por favor ingrese un texto." });
+            return Json(new { success = false, mensaje = "Por favor ingrese un texto o contraseña." });
         }
 
         try
         {
-            // Se invoca el método que utiliza AES-CBC con salt y lo convierte a Base64
-            string sEncriptado = _encrypt.FnsEncripta(texto)?.SEncript ?? "";
-            return Json(new { success = true, resultado = sEncriptado });
+            // El IPasswordHasher nativo requiere una instancia del modelo, 
+            // pasamos una nueva instancia vacía de MoUsuario (el algoritmo por defecto solo usa la cadena de texto y genera su propia sal).
+            string sHashGenerado = _passwordHasher.HashPassword(new MoUsuario(), texto);
+            
+            return Json(new { success = true, resultado = sHashGenerado });
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, mensaje = "Error al encriptar: " + ex.Message });
+            return Json(new { success = false, mensaje = "Error al generar el Hash: " + ex.Message });
         }
     }
 }
