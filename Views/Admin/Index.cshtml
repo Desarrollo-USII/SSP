@@ -1,18 +1,76 @@
-﻿@section Styles {
-    <link rel="stylesheet" href="~/css/Estilos/cssSeleccion.css" asp-append-version="true" />
+﻿@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc;
+@using SSP.ViewModels;
+@section Styles {
+    <link rel="stylesheet" href="~/css/Estilos/cssEncriptar.css" asp-append-version="true" />
 }
 
-<div class="container-fluid col-12 col-md-8 col-lg-7 col-xl-6 text-center">
-    <br /><br />
-    <div class="d-flex justify-content-center align-items-center" style="min-height: 3rem;">
-        <h3 class="m-0">¡Bienvenido, selecciona una acción!</h3>
-    </div>
-    <br /><br /><br />
-    <div class="d-flex flex-wrap justify-content-center align-items-center g-4 mt-5 gap-3 gap-md-4 gap-lg-5">
-        <div class="item-solicitud bg-white border text-dark rounded-3 p-3 d-flex flex-column justify-content-center align-items-center shadow" style="width: 17rem; height: 15rem;">
-            <img class="img-fluid" style="width: 8rem; height: 8rem;" src="@Url.Content("~/images/documento.png")" alt="Imagen Crear Solicitud" />
-            <h4 class="card-title mt-3">Gestionar Empleados</h4>
-            <a asp-controller="Empleados" asp-action="Index" class="stretched-link"></a>
+<!-- Encriptar Texto -->
+<!-- Se ajustó el estilo: se removió "height: 15rem" y se reemplazó por "h-auto" para evitar desbordamientos -->
+<div class="item-solicitud bg-white border text-dark rounded-3 p-4 d-flex flex-column justify-content-center align-items-center shadow mx-auto mt-4" style="width: 25rem; min-height: 15rem; height: auto;">
+    <img class="img-fluid" style="width: 8rem; height: 8rem;" src="@Url.Content("~/images/seguridad.png")" alt="Imagen Encriptar Texto" />
+    <h4 class="card-title mt-3">Encriptar Texto</h4>
+    
+    <form id="formEncriptar" class="w-100">
+        <div class="form-group mb-3">
+            <label for="txtEncriptar" class="fw-bold mb-1">Texto a encriptar:</label>
+            <textarea class="form-control" id="txtEncriptar" name="texto" rows="4" placeholder="Escribe el texto que deseas encriptar..." required></textarea>
         </div>
-    </div>
+        <button id="btnEncriptar" type="submit" class="btn btn-primary w-100">
+            <i class="fa-solid fa-lock me-2"></i> Encriptar
+        </button>
+        
+        <!-- Aquí se mostrará el resultado con estilo de alerta y salto de línea para textos largos -->
+        <div id="divResultadoEncriptar" class="mt-3 text-break"></div>
+    </form>
 </div>
+
+<script>
+    // Se guarda la URL generada por Razor para usarla en la petición fetch
+    window.datosEncriptar = @Html.Raw(JsonSerializer.Serialize(new { Url = Url.Action("Encriptar", "Encriptar") }));
+
+    document.getElementById('formEncriptar').addEventListener('submit', function (e) {
+        // Previene que la página se recargue
+        e.preventDefault(); 
+        
+        const texto = document.getElementById('txtEncriptar').value;
+        const resultadoDiv = document.getElementById('divResultadoEncriptar');
+        const btnBoton = document.getElementById('btnEncriptar');
+
+        // Efecto de carga en el botón
+        btnBoton.disabled = true;
+        btnBoton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Encriptando...';
+
+        // Petición AJAX al controlador
+        fetch(window.datosEncriptar.Url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            // Se envía la variable "texto" que espera el controlador
+            body: new URLSearchParams({ 'texto': texto })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Restaurar botón
+            btnBoton.disabled = false;
+            btnBoton.innerHTML = '<i class="fa-solid fa-lock me-2"></i> Encriptar';
+
+            if (data.success) {
+                // Mostrar el texto encriptado (Base64) devuelto por ClsEncrypt.cs
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-success p-2 small">
+                        <strong>Resultado:</strong><br/>
+                        <span class="user-select-all">${data.resultado}</span>
+                    </div>`;
+            } else {
+                resultadoDiv.innerHTML = `<div class="alert alert-danger p-2 small">${data.mensaje}</div>`;
+            }
+        })
+        .catch(error => {
+            btnBoton.disabled = false;
+            btnBoton.innerHTML = '<i class="fa-solid fa-lock me-2"></i> Encriptar';
+            resultadoDiv.innerHTML = `<div class="alert alert-danger p-2 small">Error de conexión.</div>`;
+        });
+    });
+</script>

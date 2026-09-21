@@ -19,16 +19,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // Esta es la ruta a tu página de login. El sistema redirigirá aquí.
+        // Esta es la ruta a tu pÃ¡gina de login. El sistema redirigir aquÃ­.
         options.LoginPath = "/Login";
 
-        // (Opcional) Ruta para cerrar sesión
+        // (Opcional) Ruta para cerrar sesiÃ³n
         options.LogoutPath = "/Login";
 
-        // (Opcional) Ruta si un usuario está logueado pero no tiene permiso
+        // (Opcional) Ruta si un usuario estÃ¡ logueado pero no tiene permiso
         options.AccessDeniedPath = "/Login";
 
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Duración de la cookie
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // DuraciÃ³n de la cookie
 
         options.Events.OnRedirectToAccessDenied = context =>
         {
@@ -39,19 +39,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization(options =>
 {
-    // Política para "Admin": Requiere el claim ("permiso", "admin")
+    // Polï¿½tica para "Admin": Requiere el claim ("permiso", "admin")
     options.AddPolicy("AdminPolicy", policy =>
         policy.RequireClaim("permiso", "admin"));
 
-    // Política para "Sprfm": Requiere el claim ("permiso", "sprfm")
+    // Polï¿½tica para "Sprfm": Requiere el claim ("permiso", "sprfm")
     options.AddPolicy("SprfmPolicy", policy =>
         policy.RequireClaim("permiso", "sprfm"));
 
-    // Política para "Siisu": Requiere el claim ("permiso", "siisu")
+    // Polï¿½tica para "Siisu": Requiere el claim ("permiso", "siisu")
     options.AddPolicy("SiisuPolicy", policy =>
         policy.RequireClaim("permiso", "siisu"));
 
-    // Política "O": Requiere "sprfm" O "siisu"
+    // Polï¿½tica "O": Requiere "sprfm" O "siisu"
     options.AddPolicy("ModulosPolicy", policy =>
         policy.RequireClaim("permiso", "sprfm", "siisu"));
 });

@@ -1,0 +1,24 @@
+@using System.Text.Json
+@using Microsoft.AspNetCore.Mvc;
+@using SSP.ViewModels;
+@section Styles {
+    <link rel="stylesheet" href="~/css/Estilos/cssEncriptar.css" asp-append-version="true" />
+}
+
+<!-- Encriptar Texto -->
+<div class="item-solicitud bg-white border text-dark rounded-3 p-3 d-flex flex-column justify-content-center align-items-center shadow" style="width: 17rem; height: 15rem;">
+    <img class="img-fluid" style="width: 8rem; height: 8rem;" src="@Url.Content("~/images/seguridad.png")" alt="Imagen Encriptar Texto" />
+    <h4 class="card-title mt-3">Encriptar Texto</h4>
+    <form id="formEncriptar" method="post" asp-action="Encriptar" asp-controller="Encriptar" class="w-100">
+        <div class="form-group">
+            <label for="txtEncriptar">Texto a encriptar:</label>
+            <textarea class="form-control" id="txtEncriptar" name="texto" rows="5" placeholder="Escribe el texto que deseas encriptar..."></textarea>
+        </div>
+        <button id="btnEncriptar" type="submit" class="btn btn-primary">Encriptar</button>
+        <div id="divResultadoEncriptar" class="mt-3"></div>
+    </form>
+</div>
+
+<script>
+    window.datosEncriptar = @Html.Raw(JsonSerializer.Serialize(new { Url = Url.Action("Encriptar", "Encriptar") }));
+</script>
